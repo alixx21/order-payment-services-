@@ -4,8 +4,9 @@ import (
 	"log"
 	"time"
 
-	orderpb "order-service/internal/orderpb"
 	"order-service/internal/usecase"
+
+	orderpb "github.com/alixx21/ap2-generated/order"
 
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"

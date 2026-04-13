@@ -6,12 +6,13 @@ import (
 	"net"
 	"os"
 
-	orderpb "order-service/internal/orderpb"
-	pb "order-service/internal/pb"
 	"order-service/internal/repository/postgres"
 	grpcserver "order-service/internal/transport/grpc"
 	transport "order-service/internal/transport/http"
 	"order-service/internal/usecase"
+
+	orderpb "github.com/alixx21/ap2-generated/order"
+	paymentpb "github.com/alixx21/ap2-generated/payment"
 
 	"github.com/gin-gonic/gin"
 	"github.com/joho/godotenv"
@@ -51,7 +52,7 @@ func main() {
 	log.Printf("Connected to Payment gRPC at %s", paymentGRPCAddr)
 
 	orderRepo := postgres.NewOrderRepository(db)
-	paymentClient := transport.NewPaymentGRPCClient(pb.NewPaymentServiceClient(conn))
+	paymentClient := transport.NewPaymentGRPCClient(paymentpb.NewPaymentServiceClient(conn))
 	orderUC := usecase.New(orderRepo, paymentClient)
 
 	go func() {
