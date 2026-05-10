@@ -20,8 +20,9 @@ func NewPaymentGRPCClient(client paymentpb.PaymentServiceClient) *PaymentGRPCCli
 }
 func (c *PaymentGRPCClient) AuthorizePayment(ctx context.Context, orderID string, amount int64) (string, error) {
 	resp, err := c.client.ProcessPayment(ctx, &paymentpb.PaymentRequest{
-		OrderId: orderID,
-		Amount:  amount,
+		OrderId:       orderID,
+		Amount:        amount,
+		CustomerEmail: "test@example.com",
 	})
 	if err != nil {
 		st, _ := status.FromError(err)

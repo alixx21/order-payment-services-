@@ -1,5 +1,5 @@
-github.com/alixx21/ap2-generated v0.0.0-20260413190610-6fb1b4bcd697 h1:bB9qurNtbgfnOwT1xs5xmvwkE7Abh2DryH2nBjF9cvI=
-github.com/alixx21/ap2-generated v0.0.0-20260413190610-6fb1b4bcd697/go.mod h1:rgkg/6bYxSLnG8+wF3U2ESsq8n3SRGCXGEIs7kj3AHA=
+github.com/alixx21/ap2-generated v1.0.0 h1:GcCycvEiBt0FrehGiD+gWrA4M9Y5PWwwdxIHpEKC0wY=
+github.com/alixx21/ap2-generated v1.0.0/go.mod h1:rgkg/6bYxSLnG8+wF3U2ESsq8n3SRGCXGEIs7kj3AHA=
 github.com/bytedance/sonic v1.5.0/go.mod h1:ED5hyg4y6t3/9Ku1R6dU/4KyJ48DZ4jPhfY1O2AihPM=
 github.com/bytedance/sonic v1.9.1 h1:6iJ6NqdoxCDr6mbY8h18oSO+cShGSMRGCEo7F2h0x8s=
 github.com/bytedance/sonic v1.9.1/go.mod h1:i736AoUSYt75HyZLoJW9ERYxcy6eaN6h4BZXU064P/U=

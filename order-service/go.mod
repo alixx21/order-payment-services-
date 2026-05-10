@@ -3,7 +3,7 @@ module order-service
 go 1.24.0
 
 require (
-	github.com/alixx21/ap2-generated v0.0.0-20260413190610-6fb1b4bcd697
+	github.com/alixx21/ap2-generated v1.0.0
 	github.com/gin-gonic/gin v1.9.1
 	github.com/google/uuid v1.6.0
 	github.com/joho/godotenv v1.5.1
@@ -38,3 +38,6 @@ require (
 	google.golang.org/genproto/googleapis/rpc v0.0.0-20260120221211-b8f7ae30c516 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 )
+
+
+replace github.com/alixx21/ap2-generated => ./ap2-generated

@@ -28,9 +28,10 @@ func (h *OrderHandler) RegisterRoutes(r *gin.Engine) {
 }
 
 type createOrderRequest struct {
-	CustomerID string `json:"customer_id" binding:"required"`
-	ItemName   string `json:"item_name"   binding:"required"`
-	Amount     int64  `json:"amount"      binding:"required"`
+	CustomerID     string `json:"customer_id" binding:"required"`
+	ItemName       string `json:"item_name"   binding:"required"`
+	Amount         int64  `json:"amount"      binding:"required"`
+	IdempotencyKey string `json:"idempotency_key"`
 }
 
 type orderResponse struct {
@@ -60,13 +61,11 @@ func (h *OrderHandler) CreateOrder(c *gin.Context) {
 		return
 	}
 
-	idempKey := c.GetHeader("Idempotency-Key")
-
 	order, err := h.uc.CreateOrder(c.Request.Context(), usecase.CreateOrderInput{
 		CustomerID:     req.CustomerID,
 		ItemName:       req.ItemName,
 		Amount:         req.Amount,
-		IdempotencyKey: idempKey,
+		IdempotencyKey: req.IdempotencyKey,
 	})
 
 	if err != nil {
