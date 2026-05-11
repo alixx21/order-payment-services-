@@ -5,10 +5,13 @@ import (
 	"log"
 	"net"
 	"os"
+	"time"
 
+	ordercache "order-service/internal/cache/redis"
 	"order-service/internal/repository/postgres"
 	grpcserver "order-service/internal/transport/grpc"
 	transport "order-service/internal/transport/http"
+	"order-service/internal/transport/http/middleware"
 	"order-service/internal/usecase"
 
 	orderpb "github.com/alixx21/ap2-generated/order"
@@ -17,6 +20,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/joho/godotenv"
 	_ "github.com/lib/pq"
+	"github.com/redis/go-redis/v9"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
 )
@@ -30,6 +34,8 @@ func main() {
 	httpPort := getEnv("PORT", "8080")
 	grpcPort := getEnv("GRPC_PORT", "9090")
 	paymentGRPCAddr := getEnv("PAYMENT_GRPC_ADDR", "localhost:9091")
+	redisURL := getEnv("REDIS_URL", "redis://localhost:6379/0")
+	cacheTTL := 5 * time.Minute // TTL for cached orders
 
 	db, err := sql.Open("postgres", dsn)
 	if err != nil {
@@ -40,6 +46,14 @@ func main() {
 		log.Fatalf("ping db: %v", err)
 	}
 	log.Println("Connected to orders database")
+
+	redisOpts, err := redis.ParseURL(redisURL)
+	if err != nil {
+		log.Fatalf("parse redis url: %v", err)
+	}
+	redisClient := redis.NewClient(redisOpts)
+	defer redisClient.Close()
+	log.Println("Connected to Redis")
 
 	conn, err := grpc.NewClient(
 		paymentGRPCAddr,
@@ -52,8 +66,9 @@ func main() {
 	log.Printf("Connected to Payment gRPC at %s", paymentGRPCAddr)
 
 	orderRepo := postgres.NewOrderRepository(db)
+	cache := ordercache.NewOrderRedisCache(redisClient, cacheTTL)
 	paymentClient := transport.NewPaymentGRPCClient(paymentpb.NewPaymentServiceClient(conn))
-	orderUC := usecase.New(orderRepo, paymentClient)
+	orderUC := usecase.New(orderRepo, paymentClient, cache)
 
 	go func() {
 		lis, err := net.Listen("tcp", ":"+grpcPort)
@@ -67,8 +82,12 @@ func main() {
 			log.Fatalf("grpc serve error: %v", err)
 		}
 	}()
+
 	handler := transport.NewOrderHandler(orderUC)
 	r := gin.Default()
+
+	r.Use(middleware.RateLimiter(redisClient, 10, time.Minute))
+
 	handler.RegisterRoutes(r)
 	log.Printf("Order Service HTTP listening on :%s", httpPort)
 	if err := r.Run(":" + httpPort); err != nil {

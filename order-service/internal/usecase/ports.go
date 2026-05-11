@@ -17,3 +17,9 @@ type OrderRepository interface {
 type PaymentClient interface {
 	AuthorizePayment(ctx context.Context, orderID string, amount int64) (transactionID string, err error)
 }
+
+type OrderCache interface {
+	Get(ctx context.Context, id string) (*domain.Order, error)
+	Set(ctx context.Context, order *domain.Order) error
+	Delete(ctx context.Context, id string) error
+}

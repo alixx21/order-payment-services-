@@ -2,7 +2,6 @@ version: "3.9"
 
 services:
 
-  # ── PostgreSQL ─────────────────────────────────────────────────────────────
   postgres:
     image: postgres:16-alpine
     container_name: postgres
@@ -20,20 +19,29 @@ services:
       timeout: 5s
       retries: 10
 
-  # ── RabbitMQ ───────────────────────────────────────────────────────────────
   rabbitmq:
     image: rabbitmq:3.13-management-alpine
     container_name: rabbitmq
     ports:
-      - "5672:5672"   # AMQP
-      - "15672:15672" # Management UI (guest/guest)
+      - "5672:5672"
+      - "15672:15672"
     healthcheck:
       test: ["CMD", "rabbitmq-diagnostics", "ping"]
       interval: 10s
       timeout: 5s
       retries: 10
 
-  # ── Payment Service ────────────────────────────────────────────────────────
+  redis:
+    image: redis:7-alpine
+    container_name: redis
+    ports:
+      - "6379:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
   payment-service:
     build:
       context: ./payment-service
@@ -53,7 +61,6 @@ services:
       rabbitmq:
         condition: service_healthy
 
-  # ── Order Service ──────────────────────────────────────────────────────────
   order-service:
     build:
       context: ./order-service
@@ -64,6 +71,7 @@ services:
       PORT: "8080"
       GRPC_PORT: "9090"
       PAYMENT_GRPC_ADDR: payment-service:9091
+      REDIS_URL: redis://redis:6379/0
     ports:
       - "8080:8080"
       - "9090:9090"
@@ -72,8 +80,9 @@ services:
         condition: service_healthy
       payment-service:
         condition: service_started
+      redis:
+        condition: service_healthy
 
-  # ── Notification Service ───────────────────────────────────────────────────
   notification-service:
     build:
       context: ./notification-service
@@ -82,10 +91,15 @@ services:
     environment:
       DATABASE_URL: postgres://postgres:123123@postgres:5432/notifications_db?sslmode=disable
       RABBITMQ_URL: amqp://guest:guest@rabbitmq:5672/
+      REDIS_URL: redis://redis:6379/0
+      PROVIDER_MODE: SIMULATED
+      MAX_RETRIES: "4"
     depends_on:
       postgres:
         condition: service_healthy
       rabbitmq:
+        condition: service_healthy
+      redis:
         condition: service_healthy
 
 volumes:

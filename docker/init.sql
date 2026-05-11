@@ -3,7 +3,6 @@ CREATE DATABASE orders_db;
 CREATE DATABASE payments_db;
 CREATE DATABASE notifications_db;
 
--- ── Orders table ─────────────────────────────────────────────────────────────
 \connect orders_db;
 
 CREATE TABLE IF NOT EXISTS orders (
@@ -19,7 +18,6 @@ CREATE TABLE IF NOT EXISTS orders (
 CREATE INDEX IF NOT EXISTS idx_orders_idempotency_key
     ON orders (idempotency_key) WHERE idempotency_key IS NOT NULL;
 
--- ── Payments table ────────────────────────────────────────────────────────────
 \connect payments_db;
 
 CREATE TABLE IF NOT EXISTS payments (
@@ -33,7 +31,6 @@ CREATE TABLE IF NOT EXISTS payments (
 
 CREATE INDEX IF NOT EXISTS idx_payments_order_id ON payments (order_id);
 
--- ── Notification idempotency table ───────────────────────────────────────────
 \connect notifications_db;
 
 CREATE TABLE IF NOT EXISTS processed_events (
