@@ -19,6 +19,7 @@ import (
 	"github.com/joho/godotenv"
 	_ "github.com/lib/pq"
 	"github.com/redis/go-redis/v9"
+	"strconv"
 )
 
 func main() {
@@ -30,7 +31,11 @@ func main() {
 	rabbitmqURL := getEnv("RABBITMQ_URL", "amqp://guest:guest@localhost:5672/")
 	redisURL := getEnv("REDIS_URL", "redis://localhost:6379/0")
 	providerMode := getEnv("PROVIDER_MODE", "SIMULATED")
-	maxRetries := 4
+	maxRetriesStr := getEnv("MAX_RETRIES", "4")
+	maxRetries, err := strconv.Atoi(maxRetriesStr)
+	if err != nil {
+		maxRetries = 4
+	}
 
 	db, err := sql.Open("postgres", dsn)
 	if err != nil {
